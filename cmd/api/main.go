@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"github.com/bentsolheim/go-app-utils/rest"
+	"github.com/bentsolheim/go-app-utils/utils"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
@@ -10,7 +12,9 @@ import (
 func main() {
 	r := gin.Default()
 	r.GET("/api/v1/current-temp", func(c *gin.Context) {
-		resp, err := http.Get("http://datalogger.kilsundvaeret.no/api/v1/logger/bua/readings")
+
+		dataLoggerUrl := utils.GetEnvOrDefault("DATALOGGER_URL", "http://datalogger.kilsundvaeret.no")
+		resp, err := http.Get(fmt.Sprintf("%s/api/v1/logger/bua/readings", dataLoggerUrl))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, rest.WrapResponse(nil, err))
 			return
