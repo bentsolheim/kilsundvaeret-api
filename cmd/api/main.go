@@ -2,30 +2,20 @@ package main
 
 import (
 	"fmt"
-	"github.com/bentsolheim/go-app-utils/rest"
-	"github.com/bentsolheim/go-app-utils/utils"
-	"github.com/gin-gonic/gin"
-	"io/ioutil"
-	"net/http"
+	"github.com/bentsolheim/kilsundvaeret-api/internal/pkg/app"
+	"log"
 )
 
 func main() {
-	r := gin.Default()
-	r.GET("/api/v1/current-temp", func(c *gin.Context) {
+	err := run()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 
-		dataLoggerUrl := utils.GetEnvOrDefault("DATALOGGER_URL", "http://datalogger.kilsundvaeret.no")
-		resp, err := http.Get(fmt.Sprintf("%s/api/v1/logger/bua/readings", dataLoggerUrl))
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, rest.WrapResponse(nil, err))
-			return
-		}
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, rest.WrapResponse(nil, err))
-			return
-		}
-		c.String(http.StatusOK, string(body))
-	})
-	r.Run(":9010")
+func run() error {
+
+	config := app.ReadAppConfig()
+	router := app.CreateGinEngine(config)
+	return router.Run(fmt.Sprintf(":%s", config.ServerPort))
 }
