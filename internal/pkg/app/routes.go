@@ -38,7 +38,7 @@ func CreateGinEngine(config AppConfig) *gin.Engine {
 		ginprom.Namespace(""),
 		ginprom.Subsystem(""),
 		ginprom.Engine(r),
-		ginprom.Path("/metrics"),
+		ginprom.Path("/api/metrics"),
 	)
 	r.Use(p.Instrument())
 	p.AddCustomGauge("logger_battery_analog", "The analog reading of the battery level", []string{"loggerId"})
