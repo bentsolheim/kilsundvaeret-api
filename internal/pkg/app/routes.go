@@ -1,11 +1,9 @@
 package app
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/Depado/ginprom"
 	"github.com/bentsolheim/go-app-utils/rest"
-	"github.com/bentsolheim/kilsundvaeret-api/internal/pkg/app/service"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"io/ioutil"
@@ -45,8 +43,6 @@ func CreateGinEngine(config AppConfig) *gin.Engine {
 				c.JSON(http.StatusInternalServerError, rest.WrapResponse(nil, err))
 				return
 			}
-			response := service.DebugResponse{}
-			_ = json.Unmarshal(body, &response)
 
 			c.String(http.StatusOK, string(body))
 		})

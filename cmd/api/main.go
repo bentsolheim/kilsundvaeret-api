@@ -21,7 +21,7 @@ func run() error {
 	metricsService := service.NewMetricsService(config.DataLoggerUrl, prometheus.DefaultRegisterer)
 	router := app.CreateGinEngine(config)
 
-	go metricsService.UpdateMetricsForever()
+	go metricsService.UpdateMetricsForever(config.DataLoggerId, 60)
 
 	return router.Run(fmt.Sprintf(":%s", config.ServerPort))
 }

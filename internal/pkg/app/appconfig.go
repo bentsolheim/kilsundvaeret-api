@@ -7,6 +7,7 @@ import (
 type AppConfig struct {
 	ServerPort    string
 	DataLoggerUrl string
+	DataLoggerId  string
 }
 
 func ReadAppConfig() AppConfig {
@@ -14,5 +15,6 @@ func ReadAppConfig() AppConfig {
 	return AppConfig{
 		e("SERVER_PORT", "8080"),
 		e("DATALOGGER_URL", "http://localhost:8081"),
+		e("DATALOGGER_ID", "bua"),
 	}
 }

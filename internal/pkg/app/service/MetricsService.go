@@ -46,8 +46,7 @@ type MetricsService struct {
 	errorCounter   *prometheus.CounterVec
 }
 
-func (s MetricsService) UpdateMetrics() error {
-	loggerId := "bua"
+func (s MetricsService) UpdateMetrics(loggerId string) error {
 	debugUrl := fmt.Sprintf("%s/api/v1/logger/%s/debug", s.dataLoggerUrl, loggerId)
 	resp, err := http.Get(debugUrl)
 	if err != nil {
@@ -80,12 +79,12 @@ func (s MetricsService) UpdateMetrics() error {
 	return nil
 }
 
-func (s MetricsService) UpdateMetricsForever() {
+func (s MetricsService) UpdateMetricsForever(loggerId string, sleepSeconds time.Duration) {
 	for {
-		if err := s.UpdateMetrics(); err != nil {
+		if err := s.UpdateMetrics(loggerId); err != nil {
 			log.Print(err)
 		}
-		time.Sleep(60 * time.Second)
+		time.Sleep(sleepSeconds * time.Second)
 	}
 }
 
