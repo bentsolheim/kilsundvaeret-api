@@ -25,25 +25,27 @@ func NewMetricsService(dataLoggerUrl string, registerer prometheus.Registerer) M
 		return counter
 	}
 	s := MetricsService{
-		dataLoggerUrl:  dataLoggerUrl,
-		batteryAnalog:  newGauge("logger_battery_analog", "The analog reading of the battery level"),
-		batteryVoltage: newGauge("logger_battery_voltage", "The analog reading of the battery level converted to a voltage level"),
-		batteryLevel:   newGauge("logger_battery_level", "The analog reading of the battery level converted to a percentage"),
-		signalStrength: newGauge("logger_signal_strength", "The signal strength of the GSM connection on the last upload"),
-		timeSpent:      newGauge("logger_time_spent_millis", "The number of milli seconds spent on the last iteration"),
-		errorCounter:   newCounter("logger_processing_errors", "A counter of all the times sending data has failed"),
+		dataLoggerUrl:          dataLoggerUrl,
+		batteryAnalog:          newGauge("logger_battery_analog", "The analog reading of the battery level"),
+		batteryVoltage:         newGauge("logger_battery_voltage", "The analog reading of the battery level converted to a voltage level"),
+		batteryLevel:           newGauge("logger_battery_level", "The analog reading of the battery level converted to a percentage"),
+		signalStrength:         newGauge("logger_signal_strength", "The signal strength of the GSM connection on the last upload"),
+		timeSpent:              newGauge("logger_time_spent_millis", "The number of milli seconds spent on the last iteration"),
+		connectionErrorCounter: newCounter("logger_connection_errors", "A counter of all the times sending data has failed"),
+		sensorErrorCounter:     newCounter("logger_sensor_errors", "A counter of all the times reading sensors has failed"),
 	}
 	return s
 }
 
 type MetricsService struct {
-	dataLoggerUrl  string
-	batteryAnalog  *prometheus.GaugeVec
-	batteryVoltage *prometheus.GaugeVec
-	batteryLevel   *prometheus.GaugeVec
-	signalStrength *prometheus.GaugeVec
-	timeSpent      *prometheus.GaugeVec
-	errorCounter   *prometheus.CounterVec
+	dataLoggerUrl          string
+	batteryAnalog          *prometheus.GaugeVec
+	batteryVoltage         *prometheus.GaugeVec
+	batteryLevel           *prometheus.GaugeVec
+	signalStrength         *prometheus.GaugeVec
+	timeSpent              *prometheus.GaugeVec
+	connectionErrorCounter *prometheus.CounterVec
+	sensorErrorCounter     *prometheus.CounterVec
 }
 
 func (s MetricsService) UpdateMetrics(loggerId string) error {
@@ -74,7 +76,8 @@ func (s MetricsService) UpdateMetrics(loggerId string) error {
 	gauge(s.signalStrength).Set(signalStrength)
 	gauge(s.timeSpent).Set(float64(debug.TimeSpent))
 
-	setCounterValue(s.errorCounter, float64(debug.Errors))
+	setCounterValue(s.connectionErrorCounter, float64(debug.ConnectionErrors))
+	setCounterValue(s.sensorErrorCounter, float64(debug.SensorErrors))
 
 	return nil
 }

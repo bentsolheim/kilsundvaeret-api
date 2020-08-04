@@ -4,7 +4,8 @@ type Debug struct {
 	SignalStrength   string
 	TimeSpent        int32
 	Iteration        int32
-	Errors           int32
+	ConnectionErrors int32
+	SensorErrors     int32
 	MillisSinceStart int64
 	Battery          BatteryLevel
 }
