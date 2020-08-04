@@ -65,7 +65,13 @@ func (s MetricsService) UpdateMetrics(loggerId string) error {
 	gauge := func(gv *prometheus.GaugeVec) prometheus.Gauge { return gv.WithLabelValues(loggerId) }
 	setCounterValue := func(cv *prometheus.CounterVec, newValue float64) {
 		counter := cv.WithLabelValues("bua")
-		counter.Add(newValue - readCounter(counter))
+		diff := newValue - readCounter(counter)
+		if diff < 0 {
+			cv.Reset()
+			counter = cv.WithLabelValues("bua")
+			diff = newValue
+		}
+		counter.Add(diff)
 	}
 
 	debug := response.Items
