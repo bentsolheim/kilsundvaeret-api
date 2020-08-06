@@ -17,7 +17,7 @@ func CreateGinEngine(config AppConfig) *gin.Engine {
 	{
 		v1.GET("/current-temp", func(c *gin.Context) {
 
-			resp, err := http.Get(fmt.Sprintf("%s/api/v1/logger/bua/readings", config.DataLoggerUrl))
+			resp, err := http.Get(fmt.Sprintf("%s/api/v1/logger/bua/readings", config.DataReceiverUrl))
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, rest.WrapResponse(nil, err))
 				return
@@ -32,7 +32,7 @@ func CreateGinEngine(config AppConfig) *gin.Engine {
 		})
 		v1.GET("/current-debug", func(c *gin.Context) {
 
-			resp, err := http.Get(fmt.Sprintf("%s/api/v1/logger/bua/debug", config.DataLoggerUrl))
+			resp, err := http.Get(fmt.Sprintf("%s/api/v1/logger/bua/debug", config.DataReceiverUrl))
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, rest.WrapResponse(nil, err))
 				return

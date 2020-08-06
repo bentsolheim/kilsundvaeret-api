@@ -10,6 +10,11 @@ ENV GO111MODULE=on \
 # Move to working directory
 WORKDIR /work
 
+# Install ca-certificates that can be copied into scratch later
+RUN apk add -U --no-cache ca-certificates
+
+RUN apk --no-cache add tzdata
+
 # Copy and download dependency using go mod
 COPY go.mod .
 COPY go.sum .
@@ -25,12 +30,17 @@ RUN rm -rf $OUTPUT_DIR && mkdir $OUTPUT_DIR \
 # Build a small image
 FROM scratch
 
+ENV TZ=Europe/Oslo
+
 ENV SERVER_PORT=9010 \
     GIN_MODE=release
 
 EXPOSE 9010
 
-COPY --from=builder /work/_out/api /
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
+COPY --from=builder /work/_out/app /
+COPY --from=builder /work/migrations /migrations
 
 # Command to run
-ENTRYPOINT ["/api"]
+ENTRYPOINT ["/app"]
