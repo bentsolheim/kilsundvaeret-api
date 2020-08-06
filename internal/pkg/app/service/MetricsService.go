@@ -1,14 +1,12 @@
 package service
 
 import (
-	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
+	"github.com/bentsolheim/kilsundvaeret-api/internal/pkg/app"
+	"github.com/palantir/stacktrace"
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
-	"io/ioutil"
 	"log"
-	"net/http"
 	"strconv"
 	"time"
 )
@@ -49,26 +47,19 @@ type MetricsService struct {
 }
 
 func (s MetricsService) UpdateMetrics(loggerId string) error {
-	debugUrl := fmt.Sprintf("%s/api/v1/logger/%s/debug", s.dataLoggerUrl, loggerId)
-	resp, err := http.Get(debugUrl)
-	if err != nil {
-		return errors.Wrap(err, fmt.Sprintf("failed loading debug data from [%s]", debugUrl))
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return errors.Wrap(err, "error reading debug data body")
-	}
+	url := fmt.Sprintf("%s/api/v1/logger/%s/debug", s.dataLoggerUrl, loggerId)
 	response := DebugResponse{}
-	_ = json.Unmarshal(body, &response)
+	if err := app.HttpGetJson(url, response); err != nil {
+		return stacktrace.Propagate(err, "error getting debug data from data receiver")
+	}
 
 	gauge := func(gv *prometheus.GaugeVec) prometheus.Gauge { return gv.WithLabelValues(loggerId) }
 	setCounterValue := func(cv *prometheus.CounterVec, newValue float64) {
-		counter := cv.WithLabelValues("bua")
+		counter := cv.WithLabelValues(loggerId)
 		diff := newValue - readCounter(counter)
 		if diff < 0 {
 			cv.Reset()
-			counter = cv.WithLabelValues("bua")
+			counter = cv.WithLabelValues(loggerId)
 			diff = newValue
 		}
 		counter.Add(diff)

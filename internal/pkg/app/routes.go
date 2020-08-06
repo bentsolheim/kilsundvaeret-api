@@ -6,7 +6,6 @@ import (
 	"github.com/bentsolheim/go-app-utils/rest"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -16,35 +15,10 @@ func CreateGinEngine(config AppConfig) *gin.Engine {
 	v1 := r.Group("/api/v1")
 	{
 		v1.GET("/current-temp", func(c *gin.Context) {
-
-			resp, err := http.Get(fmt.Sprintf("%s/api/v1/logger/bua/readings", config.DataReceiverUrl))
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, rest.WrapResponse(nil, err))
-				return
-			}
-			defer resp.Body.Close()
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, rest.WrapResponse(nil, err))
-				return
-			}
-			c.String(http.StatusOK, string(body))
+			forwardJsonResponse(c, fmt.Sprintf("%s/api/v1/logger/bua/readings", config.DataReceiverUrl))
 		})
 		v1.GET("/current-debug", func(c *gin.Context) {
-
-			resp, err := http.Get(fmt.Sprintf("%s/api/v1/logger/bua/debug", config.DataReceiverUrl))
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, rest.WrapResponse(nil, err))
-				return
-			}
-			defer resp.Body.Close()
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, rest.WrapResponse(nil, err))
-				return
-			}
-
-			c.String(http.StatusOK, string(body))
+			forwardJsonResponse(c, fmt.Sprintf("%s/api/v1/logger/bua/debug", config.DataReceiverUrl))
 		})
 	}
 
@@ -57,4 +31,13 @@ func CreateGinEngine(config AppConfig) *gin.Engine {
 	r.Use(p.Instrument())
 	http.Handle("/metrics", promhttp.Handler())
 	return r
+}
+
+func forwardJsonResponse(c *gin.Context, url string) {
+	body, err := HttpGet(url)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, rest.WrapResponse(nil, err))
+		return
+	}
+	c.Data(http.StatusOK, "application/json", body)
 }
