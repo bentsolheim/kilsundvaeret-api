@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/bentsolheim/kilsundvaeret-api/internal/pkg/app"
+	"github.com/bentsolheim/kilsundvaeret-api/internal/pkg/app/controller"
 	"github.com/bentsolheim/kilsundvaeret-api/internal/pkg/app/service"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/prometheus/client_golang/prometheus"
@@ -31,7 +32,11 @@ func run() error {
 	defer db.Close()
 
 	metricsService := service.NewMetricsService(config.DataReceiverUrl, prometheus.DefaultRegisterer)
-	router := app.CreateGinEngine(config)
+	weatherMetricsService := service.NewWeatherMetricsService(db)
+
+	weatherMetricsController := controller.NewWeatherMetricsController(weatherMetricsService)
+
+	router := app.CreateGinEngine(config, weatherMetricsController)
 
 	go metricsService.UpdateMetricsForever("bua", 60)
 

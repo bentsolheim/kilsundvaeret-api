@@ -2,7 +2,7 @@ package service
 
 import (
 	"fmt"
-	"github.com/bentsolheim/kilsundvaeret-api/internal/pkg/app"
+	"github.com/bentsolheim/go-app-utils/utils"
 	"github.com/palantir/stacktrace"
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
@@ -49,7 +49,7 @@ type MetricsService struct {
 func (s MetricsService) UpdateMetrics(loggerId string) error {
 	url := fmt.Sprintf("%s/api/v1/logger/%s/debug", s.dataLoggerUrl, loggerId)
 	response := DebugResponse{}
-	if err := app.HttpGetJson(url, response); err != nil {
+	if err := utils.HttpGetJson(url, response); err != nil {
 		return stacktrace.Propagate(err, "error getting debug data from data receiver")
 	}
 
