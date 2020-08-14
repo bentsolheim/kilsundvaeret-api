@@ -8,3 +8,4 @@ so this option had to be removed.
 ## Reimport sensor readings
 
     echo "drop table sensor_reading;" | cat - kilsundvaeret_sensor_reading.sql | /usr/local/opt/mysql-client/bin/mysql -uroot -pdevpass -h127.0.0.1 kilsundvaeret 
+    
