@@ -36,6 +36,7 @@ jobs:
       - name: Push image
         run: |
           IMAGE_ID=$IMAGE_NAME
+          GIT_HASH=$(git rev-parse --short "$GITHUB_SHA")
 
           # Change all uppercase to lowercase
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
@@ -47,7 +48,7 @@ jobs:
           [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
 
           # Use Docker `latest` tag convention
-          [ "$VERSION" == "master" ] && VERSION="${{ github.ref }}"
+          [ "$VERSION" == "master" ] && VERSION=$GIT_HASH
 
           echo IMAGE_ID=$IMAGE_ID
           echo VERSION=$VERSION
