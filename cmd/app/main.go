@@ -6,6 +6,7 @@ import (
 	"github.com/bentsolheim/kilsundvaeret-api/internal/pkg/app/controller"
 	"github.com/bentsolheim/kilsundvaeret-api/internal/pkg/app/service"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/palantir/stacktrace"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 )
@@ -19,7 +20,13 @@ func main() {
 
 func run() error {
 
-	config := app.ReadAppConfig()
+	config, err := app.ReadAppConfig()
+	if err != nil {
+		return stacktrace.Propagate(err, "error while reading application configuration")
+	}
+	if !config.StracktraceInErrorMessages {
+		stacktrace.DefaultFormat = stacktrace.FormatBrief
+	}
 
 	if err := app.ConfigureLogging(config.LogLevel); err != nil {
 		return err
@@ -35,8 +42,9 @@ func run() error {
 	weatherMetricsService := service.NewWeatherMetricsService(db)
 
 	weatherMetricsController := controller.NewWeatherMetricsController(weatherMetricsService)
+	weatherMetricsReportController := controller.NewWeatherMetricsReportController(weatherMetricsService)
 
-	router := app.CreateGinEngine(config, weatherMetricsController)
+	router := app.CreateGinEngine(*config, weatherMetricsController, weatherMetricsReportController)
 
 	go metricsService.UpdateMetricsForever("bua", 60)
 

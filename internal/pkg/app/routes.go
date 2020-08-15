@@ -9,12 +9,13 @@ import (
 	"net/http"
 )
 
-func CreateGinEngine(config AppConfig, metricsController *controller.WeatherMetricsController) *gin.Engine {
+func CreateGinEngine(config AppConfig, metricsController *controller.WeatherMetricsController, reportController controller.WeatherMetricsReportController) *gin.Engine {
 	r := gin.Default()
 
 	v1 := r.Group("/api/v1")
 	{
 		v1.GET("/weather-metrics/", metricsController.GetAll)
+		v1.GET("/reports/current-weather", reportController.CurrentWeather)
 		v1.GET("/current-temp", func(c *gin.Context) {
 			controller.ForwardJsonResponse(c, fmt.Sprintf("%s/api/v1/logger/bua/readings", config.DataReceiverUrl))
 		})
