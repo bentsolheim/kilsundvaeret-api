@@ -19,7 +19,7 @@ func (c WeatherMetricsReportController) CurrentWeather(ctx *gin.Context) {
 	if report, err := c.weatherMetricsService.CurrentWeather(); err != nil {
 		ctx.JSON(http.StatusInternalServerError, rest.WrapResponse(nil, err))
 	} else {
-		ctx.JSON(http.StatusOK, rest.WrapResponse(report, nil))
+		ctx.JSON(http.StatusOK, rest.WrapResponse([]*service.WeatherReport{report}, nil))
 	}
 
 }
