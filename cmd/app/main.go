@@ -5,6 +5,7 @@ import (
 	"github.com/bentsolheim/kilsundvaeret-api/internal/pkg/app"
 	"github.com/bentsolheim/kilsundvaeret-api/internal/pkg/app/controller"
 	"github.com/bentsolheim/kilsundvaeret-api/internal/pkg/app/service"
+	"github.com/bentsolheim/kilsundvaeret-api/internal/pkg/app/utils"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/palantir/stacktrace"
 	"github.com/prometheus/client_golang/prometheus"
@@ -28,15 +29,15 @@ func run() error {
 		stacktrace.DefaultFormat = stacktrace.FormatBrief
 	}
 
-	if err := app.ConfigureLogging(config.LogLevel); err != nil {
+	if err := utils.ConfigureLogging(config.LogLevel); err != nil {
 		return err
 	}
 
-	db, err := app.ConnectAndMigrateDatabase(config.DbConfig)
+	db, err := utils.ConnectAndMigrateDatabase(config.DbConfig)
 	if err != nil {
 		return err
 	}
-	defer db.Close()
+	defer utils.CloseSilently(db)
 
 	metricsService := service.NewMetricsService(config.DataReceiverUrl, prometheus.DefaultRegisterer)
 	weatherMetricsService := service.NewWeatherMetricsService(db)

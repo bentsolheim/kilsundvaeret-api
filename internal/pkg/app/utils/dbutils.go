@@ -1,16 +1,18 @@
-package app
+package utils
 
 import (
 	"database/sql"
-	"github.com/bentsolheim/go-app-utils/db"
+	dbutils "github.com/bentsolheim/go-app-utils/db"
 	"github.com/golang-migrate/migrate"
 	"github.com/golang-migrate/migrate/database/mysql"
 	_ "github.com/golang-migrate/migrate/source/file"
 	"github.com/palantir/stacktrace"
+	"github.com/prometheus/common/log"
 	"github.com/sirupsen/logrus"
+	"io"
 )
 
-func ConnectAndMigrateDatabase(config db.DbConfig) (*sql.DB, error) {
+func ConnectAndMigrateDatabase(config dbutils.DbConfig) (*sql.DB, error) {
 	db, err := ConnectToDatabase(config)
 	if err != nil {
 		return nil, err
@@ -22,7 +24,7 @@ func ConnectAndMigrateDatabase(config db.DbConfig) (*sql.DB, error) {
 	return db, nil
 }
 
-func ApplyMigrations(db *sql.DB, config db.DbConfig) error {
+func ApplyMigrations(db *sql.DB, config dbutils.DbConfig) error {
 	logrus.Info("Applying database migrations")
 	driver, err := mysql.WithInstance(db, &mysql.Config{})
 	if err != nil {
@@ -42,7 +44,7 @@ func ApplyMigrations(db *sql.DB, config db.DbConfig) error {
 	return nil
 }
 
-func ConnectToDatabase(config db.DbConfig) (*sql.DB, error) {
+func ConnectToDatabase(config dbutils.DbConfig) (*sql.DB, error) {
 	logrus.Info("Connecting to db: ", config.ConnectString("***"))
 	db, err := sql.Open("mysql", config.ConnectString(""))
 	if err != nil {
@@ -52,4 +54,10 @@ func ConnectToDatabase(config db.DbConfig) (*sql.DB, error) {
 		return nil, stacktrace.Propagate(err, "unable to ping database")
 	}
 	return db, nil
+}
+
+func CloseSilently(c io.Closer) {
+	if err := c.Close(); err != nil {
+		log.Warn(err)
+	}
 }

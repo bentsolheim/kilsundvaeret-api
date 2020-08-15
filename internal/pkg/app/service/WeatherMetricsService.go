@@ -3,6 +3,7 @@ package service
 import (
 	"database/sql"
 	"fmt"
+	"github.com/bentsolheim/kilsundvaeret-api/internal/pkg/app/utils"
 	"github.com/palantir/stacktrace"
 	"time"
 )
@@ -40,7 +41,7 @@ type WeatherMetricsService struct {
 }
 
 func (s WeatherMetricsService) FindAllFiltered(filter MetricsFilter) ([]WeatherMetric, error) {
-	sql := `select s.type, s.unit, sr.value, sr.sensor_read_date
+	query := `select s.type, s.unit, sr.value, sr.sensor_read_date
 from sensor_reading sr
          left join sensor s on sr.sensor_id = s.id
          left join logger l on s.logger_id = l.id
@@ -48,7 +49,7 @@ where l.name = ?
   and s.type = ?
 order by sr.created_date desc, sr.sensor_id`
 
-	if metrics, err := s.readWeatherMetricsRows(s.db.Query(sql, filter.LoggerName, filter.Type)); err != nil {
+	if metrics, err := s.readWeatherMetricsRows(s.db.Query(query, filter.LoggerName, filter.Type)); err != nil {
 		return nil, err
 	} else {
 		return metrics, nil
@@ -56,7 +57,7 @@ order by sr.created_date desc, sr.sensor_id`
 }
 
 func (s WeatherMetricsService) CurrentWeather() (*WeatherReport, error) {
-	sql := `SELECT s.type, s.unit, sr.value, sr.sensor_read_date
+	query := `SELECT s.type, s.unit, sr.value, sr.sensor_read_date
 FROM sensor_reading sr
 INNER JOIN (
     SELECT sensor_id, max(sensor_read_date) as maxdate
@@ -67,7 +68,7 @@ left join sensor s on sr.sensor_id = s.id
 left join logger l on s.logger_id = l.id
 where l.name='met'`
 
-	if metrics, err := s.readWeatherMetricsRows(s.db.Query(sql)); err != nil {
+	if metrics, err := s.readWeatherMetricsRows(s.db.Query(query)); err != nil {
 		println(fmt.Sprintf("%v", err))
 		return nil, err
 	} else {
@@ -80,7 +81,7 @@ func (s WeatherMetricsService) readWeatherMetricsRows(rows *sql.Rows, err error)
 	if err != nil {
 		return nil, stacktrace.Propagate(err, "error when executing sql")
 	}
-	defer rows.Close()
+	defer utils.CloseSilently(rows)
 
 	var metrics []WeatherMetric
 	metric := WeatherMetric{}
