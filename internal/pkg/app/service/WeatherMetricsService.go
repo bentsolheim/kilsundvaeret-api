@@ -24,7 +24,7 @@ type WeatherMetric struct {
 	Type        MetricType
 	Source      *MetricSource
 	CreatedDate time.Time
-	Value       float32
+	Value       float64
 }
 
 type WeatherReport struct {
