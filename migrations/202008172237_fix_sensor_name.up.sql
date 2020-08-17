@@ -1,0 +1,1 @@
+UPDATE sensor t SET t.name = 'vann-temp' WHERE t.name = 'water-temperature';
