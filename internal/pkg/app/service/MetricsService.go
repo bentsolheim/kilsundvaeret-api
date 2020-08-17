@@ -49,7 +49,7 @@ type MetricsService struct {
 func (s MetricsService) UpdateMetrics(loggerId string) error {
 	url := fmt.Sprintf("%s/api/v1/logger/%s/debug", s.dataLoggerUrl, loggerId)
 	response := DebugResponse{}
-	if err := utils.HttpGetJson(url, response); err != nil {
+	if err := utils.HttpGetJson(url, &response); err != nil {
 		return stacktrace.Propagate(err, "error getting debug data from data receiver")
 	}
 
