@@ -66,7 +66,7 @@ INNER JOIN (
 ) AS maxdates ON (sr.sensor_id = maxdates.sensor_id) AND (sr.sensor_read_date = maxdate)
 left join sensor s on sr.sensor_id = s.id
 left join logger l on s.logger_id = l.id
-where l.name='met'`
+where l.name='met' or s.name in ('vann-temp')`
 
 	if metrics, err := s.readWeatherMetricsRows(s.db.Query(query)); err != nil {
 		println(fmt.Sprintf("%v", err))
